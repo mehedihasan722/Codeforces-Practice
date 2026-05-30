@@ -1,7 +1,7 @@
 /*
  *       Author :   Mehedi Hasan 
- *       Created:   Sat 30.May.2026 10:01:59
- *       File   :   D_2_Tree_Orientation_Hard_Version.cpp
+ *       Created:   Sat 30.May.2026 10:01:53
+ *       File   :   D_1_Tree_Orientation_Easy_Version.cpp
 */
 
 #include <bits/stdc++.h>
@@ -200,10 +200,100 @@ const ll INF = 1e14;
 const int mxN = 1e6 + 10;
 const int N = 1e3 + 10;
 int n,m;
+struct UnionFind {
+    vt<int> parent, size;
+    UnionFind(int n) {
+        parent.resize(n);
+        size.resize(n, 1);
+        FOR(n) {
+            parent[i] = i;
+        }
+    }
+    int find(int a) {
+        if(parent[a] == a)
+            return a;
+        return parent[a] = find(parent[a]);
+    }
+    bool join(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if(a != b) {
+            if(size[a] < size[b])
+                swap(a, b);
+            parent[b] = a;
+            size[a] += size[b];
+        }
+        return a != b;
+    }
+};
 
 void solve() 
 {
-    
+    int n;
+    read(n);
+    vt<string> S(n);
+    read(S);
+    vt<vt<int>> ok(n, vt<int>(n)), adj(n);
+    FOR(n) {
+        FOR(j, n) {
+            ok[i][j] = S[i][j] == '1';
+            if(ok[i][j]) {
+                adj[i].pb(j);
+            }
+        }
+    }
+    vt<int> nreach(n);
+    FOR(n) {
+        FOR(j, n) {
+            nreach[i] += ok[i][j];
+        }
+    }
+    vt<int> ord(n);
+    FOR(n) {
+        ord[i] = i;
+    }
+    sort(all(ord), [&](int a, int b) {
+        return nreach[a] < nreach[b];
+    });
+    vt<int> ord_rev(rall(ord));
+    UnionFind uf(n);
+    vt<pii> edges;
+    EACH(v, ord) {
+        auto temp = ok[v];
+        if(temp[v] != 1) {
+            print("NO");
+            return;
+        }
+        temp[v] = 0;
+        EACH(w, ord_rev) {
+            if(v == w) continue;
+            if(!temp[w]) continue;
+            edges.pb({v, w});
+            if(!uf.join(v, w)) {
+                print("NO");
+                return;
+            }
+            EACH(x, adj[w]) {
+                if(!temp[x]) {
+                    print("NO");
+                    return;
+                }
+                temp[x] = 0;
+            }
+        }
+        if(temp != vt<int>(n, 0)) {
+            print("NO");
+            return;
+        }
+    }
+    if(sz(edges) != n-1) {
+        print("NO");
+        return;
+    }
+    print("YES");
+    EACH(e, edges) {
+        print(e.ff+1, e.ss+1);
+    }
 }
 
 int main() {
@@ -211,7 +301,7 @@ int main() {
     cin.tie(0);
 
     int t=1;
-    //read(t);
+    read(t);
     FOR(t) {
         //write("Case #", i+1, ": ");
         solve();
